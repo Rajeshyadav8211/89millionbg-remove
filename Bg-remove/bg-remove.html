@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Image Background Remover</title>
+  <style>
+    body {
+      font-family: 'Arial', sans-serif;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background: linear-gradient(#e52a45, rgba(38, 50, 56, 0.8)),
+        url('xxx.jpg') center/cover no-repeat;
+      color: #fff;
+    }
+
+    .logo {
+      position: fixed;
+      top: 20px;
+      left: 20px;
+      display: flex;
+      align-items: center;
+    }
+
+    .logo img {
+      width: 230px;
+      height: 150px;
+      margin-left: 25px;
+      /* border-radius: 50%; */
+    }
+
+    .logo span {
+      font-size: 20px;
+      font-weight: bold;
+      color: #fff;
+    }
+
+    .container {
+      text-align: center;
+      background: rgba(255, 255, 255, 0.9);
+      color: #333;
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+      padding: 30px 20px;
+      border-radius: 4px;
+      width: 90%;
+      max-width: 500px;
+    }
+
+    h1 {
+      font-size: 24px;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    input[type="file"] {
+      display: none;
+    }
+
+    label {
+      display: inline-block;
+      padding: 10px 20px;
+      background-color: #2575fc;
+      color: #fff;
+      font-size: 16px;
+      font-weight: bold;
+      border-radius: 5px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    label:hover {
+      background-color: #1a61d4;
+    }
+
+    canvas {
+      display: none;
+      margin: 20px 0;
+      border-radius: 10px;
+      border: 1px solid #ddd;
+      background: #f9f9f9;
+    }
+
+    button {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 5px;
+      background-color: #4caf50;
+      color: white;
+      font-size: 16px;
+      cursor: pointer;
+      transition: background-color 0.3s ease;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    button:disabled {
+      background-color: #ccc;
+      cursor: not-allowed;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="logo">
+    <img src="89logo.png" alt="Logo" />
+  </div>
+  <div class="container">
+    <h1>Free Full HD</h1>
+    <h1>Remove Background from Image</h1>
+    <label for="upload">Choose File</label>
+    <input type="file" id="upload" accept="image/*" />
+    <canvas id="canvas" width="500" height="500"></canvas>
+    <button id="download" style="display: none; margin-top: 20px;">Download HD Image</button>
+  </div>
+
+  <script>
+    function removeBackgroundWithCanvas(image) {
+      const canvas = document.getElementById("canvas");
+      const ctx = canvas.getContext("2d");
+
+      // Fixed canvas size
+      const canvasWidth = canvas.width;
+      const canvasHeight = canvas.height;
+
+      // Calculate scaling to maintain the aspect ratio
+      const scale = Math.min(
+        canvasWidth / image.width,
+        canvasHeight / image.height
+      );
+      const scaledWidth = image.width * scale;
+      const scaledHeight = image.height * scale;
+
+      // Center the image on the canvas
+      const xOffset = (canvasWidth - scaledWidth) / 2;
+      const yOffset = (canvasHeight - scaledHeight) / 2;
+
+      // Draw the image on the canvas
+      ctx.clearRect(0, 0, canvasWidth, canvasHeight);
+      ctx.drawImage(image, xOffset, yOffset, scaledWidth, scaledHeight);
+
+      // Remove white background by making it transparent
+      const imageData = ctx.getImageData(0, 0, canvasWidth, canvasHeight);
+      const data = imageData.data;
+
+      for (let i = 0; i < data.length; i += 4) {
+        const r = data[i];
+        const g = data[i + 1];
+        const b = data[i + 2];
+
+        // Detect white background (or near white) and make it transparent
+        if (r > 200 && g > 200 && b > 200) {
+          data[i + 3] = 0; // Set alpha to 0 (transparent)
+        }
+      }
+
+      ctx.putImageData(imageData, 0, 0);
+      canvas.style.display = "block"; // Show the canvas
+      return canvas.toDataURL("image/png");
+    }
+
+    document.getElementById("upload").addEventListener("change", (event) => {
+      const file = event.target.files[0];
+      const img = new Image();
+      img.src = URL.createObjectURL(file);
+
+      img.onload = () => {
+        const resultUrl = removeBackgroundWithCanvas(img);
+        const downloadBtn = document.getElementById("download");
+
+        // Enable download button
+        downloadBtn.style.display = "inline-block";
+        downloadBtn.onclick = () => {
+          const a = document.createElement("a");
+          a.href = resultUrl;
+          a.download = "89million-bg-remove.png";
+          a.click();
+        };
+      };
+    });
+  </script>
+</body>
+
+</html>
